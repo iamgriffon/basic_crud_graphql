@@ -1,13 +1,29 @@
 // Next.js API route support: https://nextjs.org/docs/api-routes/introduction
-import type { NextApiRequest, NextApiResponse } from 'next'
+import { PrismaClient } from '@prisma/client';
+import type { NextApiRequest, NextApiResponse } from 'next';
+import bcrypt from "bcrypt";
 
-type Data = {
-  name: string
-}
+const prisma = new PrismaClient();
 
-export default function handler(
+
+export default async function handler(
   req: NextApiRequest,
-  res: NextApiResponse<Data>
+  res: NextApiResponse
 ) {
-  res.status(200).json({ name: 'John Doe' })
+
+  const { providedEmail, providedPassword } = req.body;
+
+  const dbquery = await prisma.user.findFirst({
+    where: {
+      email: providedEmail,
+    },
+    select: {
+      email: true,
+      password: true,
+    }
+  });
+
+  const checkLogin = await bcrypt.compare(dbquery?.password as string, providedPassword);
+
+  if (checkLogin === true) res.send({match: checkLogin})
 }
