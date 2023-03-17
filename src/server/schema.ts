@@ -3,21 +3,30 @@ import { gql } from "apollo-server-micro";
 export const typeDefs = gql`
 
   type Task {
-    id: Int!,
+    id: Int,
     task: String,
-    userId: ID
+    userId: Int,
+    finished: Boolean
   }
 
   type User {
-      id: Int!
+      id: Int
       name: String,
       email: String,
-      password: String,
       image: String,
-      tasks: [Task]!
+      tasks: [Task]
     }
 
     type Query {
-      user: User
+      user(email: String): User
+      users: [User]
+      tasks(email: String): [Task]
+    }
+
+    type Mutation {
+      addTask(email: String, task: String): [Task]
+      deleteTask(email: String, taskId: Int): [Task]
+      finishTask(email: String, task: String, taskId: Int): [Task]
+      updateTask(email: String, task: String, taskId: Int): [Task]
     }
 `;

@@ -3,9 +3,9 @@ import bcrypt from "bcrypt";
 
 const prisma = new PrismaClient();
 
-async function getHashedPassword(password: string){
-   const result = await bcrypt.hash(password, 2).then((res) => res);
-   return result
+async function getHashedPassword(password: string) {
+  const result = await bcrypt.hash(password, 2).then((res) => res);
+  return result;
 }
 
 const tasks = [
@@ -20,12 +20,11 @@ const tasks = [
 ];
 
 async function main() {
-
   await prisma.user.create({
     data: {
       name: "test name",
       email: "example@email.com",
-      password: await getHashedPassword('testpassword'),
+      password: await getHashedPassword("testpassword"),
       image: "https://api.lorem.space/image/movie",
     },
   });
@@ -34,7 +33,7 @@ async function main() {
     data: {
       name: "Gustavo",
       email: "guusilveira@gmail.com",
-      password: await getHashedPassword('aoba123'),
+      password: await getHashedPassword("aoba123"),
       image: "https://github.com/iamgriffon.png",
     },
   });
@@ -59,8 +58,6 @@ async function main() {
     });
   });
 }
-
-
 prisma.task.deleteMany();
 prisma.user.deleteMany();
 main();
