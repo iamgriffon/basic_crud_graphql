@@ -55,6 +55,79 @@ export const resolvers = {
   },
 
   Mutation: {
+    addUser: async (_parent, args, context) => {
+      const { name, email, image } = args;
+      await prisma.user
+        .create({
+          data: {
+            name: name,
+            image: image,
+          },
+        })
+        .then((res) => console.log("Response from server: ", res));
+      const updatedUsers = await prisma.user.findMany({
+        include: {
+          tasks: true,
+        },
+      });
+      return updatedUsers;
+    },
+
+    updateUser: async (_parent, args, context) => {
+      const { name, email, image } = args;
+      const user = await prisma.user.findFirstOrThrow({
+        where: {
+          email: email,
+        },
+      });
+
+      if (!user) {
+        throw new Error(`No user found with email: ${email}`);
+      }
+
+      await prisma.user.update({
+        where: {
+          id: user.id,
+        },
+        data: {
+          name: name,
+          email: email,
+          image: image,
+        },
+      });
+      const updatedUsers = await prisma.user.findMany({
+        include: {
+          tasks: true
+        }
+      });
+      return updatedUsers;
+    },
+
+    deleteUser: async(_parent, args, context) => {
+      const { name, email, image } = args;
+      const user = await prisma.user.findFirstOrThrow({
+        where: {
+          email: email,
+        },
+      });
+
+      if (!user) {
+        throw new Error(`No user found with email: ${email}`);
+      }
+
+      await prisma.user.delete({
+        where: {
+          id: user.id,
+        },
+      });
+      const updatedUsers = await prisma.user.findMany({
+        include: {
+          tasks: true
+        }
+      });
+      return updatedUsers;
+    },
+
     addTask: async (_parent, args, context) => {
       const { email, task } = args;
 

@@ -24,6 +24,9 @@ export const typeDefs = gql`
     }
 
     type Mutation {
+      addUser(email: String, name: String, image: String): [User]
+      updateUser(email: String, name: String, image: String): [User]
+      deleteUser(email: String, name: String, image: String): [User]
       addTask(email: String, task: String): [Task]
       deleteTask(email: String, taskId: Int): [Task]
       finishTask(email: String, task: String, taskId: Int): [Task]

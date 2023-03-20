@@ -11,7 +11,7 @@ interface ToDoProps {
   update?: (param: number) => void;
 }
 
-export function ListItem({ data, finished, destroy, complete, update }: ToDoProps) {
+export function Task({ data, finished, destroy, complete, update }: ToDoProps) {
 
   const ref = useRef<HTMLInputElement>(null);
   const [isEditable, setIsEditable] = useState(false);
@@ -45,7 +45,13 @@ export function ListItem({ data, finished, destroy, complete, update }: ToDoProp
           value={input}
           className="bg-transparent w-full px-1"
           readOnly={!isEditable}
-          onChange={(e) => setNewTask(e)}
+          onBlur={(e) => {
+            setIsEditable(false)
+            if (e.target.value.length == 0) setInput('<No Name>')
+          }}
+          onChange={(e) => {
+            setNewTask(e)
+          }}
           ref={ref}
         />
       </td>
@@ -76,6 +82,7 @@ export function ListItem({ data, finished, destroy, complete, update }: ToDoProp
               <FontAwesomeIcon icon={faTrash} />
             </button>
           )}
+
         </div>
       </td>
     </tr>
