@@ -1,14 +1,16 @@
 import { useUsers } from "@/context/userContext";
+import { User } from "@/types/app";
 import { faPencil, faTasks, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import Link from "next/link";
+import { useRouter } from "next/dist/client/router";
 import { ChangeEvent, useRef, useState } from "react";
 
 interface TableUserProps {
   id: number;
   data: string;
-  email?: string;
-  details?: (param: number) => void;
+  email: string;
+  details: User,
+  getUser: (param: User) => void;
 }
 
 export function TableUser({
@@ -16,8 +18,10 @@ export function TableUser({
   data,
   email,
   details,
+  getUser
 }: TableUserProps) {
   const ref = useRef<HTMLInputElement>(null);
+  const router = useRouter();
   const [isEditable, setIsEditable] = useState(false);
   const [input, setInput] = useState(() => data);
   const { updateUser, deleteUser } = useUsers();
@@ -25,6 +29,11 @@ export function TableUser({
   function handleChange(event: ChangeEvent<HTMLInputElement>){
     setInput(event.target.value)
     updateUser(id, input)
+  }
+
+  function handleClick(){
+    getUser(details);
+    router.push('/user')
   }
 
   function handleUpdateClick() {
@@ -62,10 +71,9 @@ export function TableUser({
       <td className="text-right">
         <div className="w-full">
           {details && (
-            <button className="rounded bg-green-500 text-white py-2 px-4 hover:bg-green-600 mr-2">
-              <Link href="/">
+            <button onClick={handleClick
+            } className="rounded bg-green-500 text-white py-2 px-4 hover:bg-green-600 mr-2">
                 <FontAwesomeIcon icon={faTasks} />
-              </Link>
             </button>
           )}
           <button

@@ -4,25 +4,36 @@ import { gql } from "apollo-server-micro";
 import { createContext, ReactNode, useContext, useState } from "react";
 
 interface UserContextProps {
-  users: User[]
+  users: User[];
+  user: User;
   fetchUsers: () => Promise<any>;
   updateUsers: (param: User[]) => void;
+  addUser: (name: string, email: string, image: string) => void;
   updateUser: (index: number, param: string) => void;
   deleteUser: (param: number) => void;
-  addTask: (index: number, param: string) => void;
-  deleteTask: (userIndex: number, taskIndex: number) => void;
+  addTask: (param: string) => void;
+  deleteTask: (taskIndex: number) => void;
+  finishTask: (taskIndex: number) => void;
+  selectUser: (poram: User) => void;
 }
 
 interface UserContextProviderProps {
-  children: ReactNode
+  children: ReactNode;
 }
 
 const UserContext = createContext({} as UserContextProps);
 
-export const UserContextProvider = ({children}: UserContextProviderProps) => {
+export const UserContextProvider = ({ children }: UserContextProviderProps) => {
   const [users, setUsers] = useState<User[]>([]);
-  
-  async function fetchUsers(){
+  const [user, setUser] = useState<User>({} as any);
+
+  function updateState() {
+    const updatedUsers = [...users];
+    users[user.id] = user;
+    setUsers(updatedUsers);
+  }
+
+  async function fetchUsers() {
     const { data } = await client.query({
       query: gql`
         query Users {
@@ -39,52 +50,126 @@ export const UserContextProvider = ({children}: UserContextProviderProps) => {
         }
       `,
     });
-    return data
+    return data;
   }
 
-  function updateUsers(users: User[]){
-    setUsers(users)
+  function updateUsers(users: User[]) {
+    setUsers(users);
   }
 
-  function updateUser(userIndex: number, data: string){
+  function addUser(name: string, email: string, image: string){
+    const updatedUsers = [...users]
+    var latest = 0;
+    updatedUsers.forEach(user => {
+      if (user.id > latest) latest = user.id
+    });
+
+    const newUser: User = {
+      id: latest,
+      email: email,
+      name: name,
+      image: image,
+      tasks: []
+    }
+    updatedUsers.push(newUser);
+    setUsers(updatedUsers)
+  }
+
+  function updateUser(userIndex: number, data: string) {
     const newArray = [...users];
     newArray[userIndex].name == data;
-    setUsers(newArray)
+    setUsers(newArray);
   }
 
-   function deleteUser(userIndex: number){
+  function deleteUser(userIndex: number) {
     setUsers((prevState) => {
-      return [...prevState].filter((_, index) => index !== userIndex)
-    })
+      return [...prevState].filter((_, index) => index !== userIndex);
+    });
   }
 
-  function addTask(userIndex: number, task: string){
-    setUsers((prevState) => {
-      const userTasks = prevState[userIndex].tasks;
-      const updatedTasks = [...prevState];
-      updatedTasks[userIndex].tasks = [...userTasks, {
+  function addTask(task: string) {
+    var latest = 0;
+    users.forEach(user => {
+      user.tasks.map(task => {
+        if (task.id > latest) latest = task.id
+      });
+    });
+   
+    setUser((prevState) => {
+      const newTask = {
+        id: prevState.tasks.length + 1,
         finished: false,
         task,
-        userId: userIndex,
-      }]
-      return updatedTasks
-    })
+        userId: user.id,
+      };
+      const updatedTasks = [...prevState.tasks]
+      updatedTasks.push(newTask)
+      return {
+        ...prevState,
+        tasks: updatedTasks
+      }
+    });
   }
 
-  function deleteTask(userIndex: number, taskIndex: number){
-   setUsers((prevState) => {
-      const updatedTasks = prevState[userIndex].tasks.filter((_, index) => index !== taskIndex); //delete the task itself
-      const updatedUsers = [...prevState]; //create a reference for the new state
-      updatedUsers[userIndex] = { ...prevState[userIndex], tasks: updatedTasks } //place the actual changes in the new reference
-      return updatedUsers //actually make the reference the new state.
-   })
+  function deleteTask(taskIndex: number) {
+    const updatedTasks = { ...user }.tasks.filter((_, i) => i != taskIndex);
+    setUser({
+      ...user,
+      tasks: updatedTasks,
+    });
+    updateState();
+  }
+
+  function finishTask(taskIndex: number) {
+    setUser((prevState) => {
+      const taskToFinish = prevState.tasks[taskIndex].finished;
+      const updatedTasks = [...prevState.tasks];
+      updatedTasks[taskIndex] = {
+        ...updatedTasks[taskIndex],
+        finished: !taskToFinish,
+      };
+      return {
+        ...prevState,
+        tasks: updatedTasks,
+      };
+    });
+    updateState();
+  }
+
+  function updateTask(taskIndex: number, task: string) {
+    setUser((prevState) => {
+      const updatedTasks = [...prevState.tasks];
+      updatedTasks[taskIndex] = { ...updatedTasks[taskIndex], task: task };
+      return {
+        ...prevState,
+        tasks: updatedTasks,
+      };
+    });
+  }
+
+  function selectUser(user: User) {
+    setUser(user);
   }
 
   return (
-    <UserContext.Provider value={{users, fetchUsers, updateUsers, updateUser, deleteUser: deleteUser, addTask, deleteTask}}>
+    <UserContext.Provider
+      value={{
+        users,
+        fetchUsers,
+        addUser,
+        updateUsers,
+        updateUser,
+        deleteUser,
+        addTask,
+        deleteTask,
+        finishTask,
+        selectUser,
+        user,
+      }}
+    >
       {children}
     </UserContext.Provider>
-  )
-}
+  );
+};
 
-export const useUsers = () => useContext(UserContext)
+export const useUsers = () => useContext(UserContext);

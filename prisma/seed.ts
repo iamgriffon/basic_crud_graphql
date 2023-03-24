@@ -24,7 +24,6 @@ async function main() {
     data: {
       name: "test name",
       email: "example@email.com",
-      password: await getHashedPassword("testpassword"),
       image: "https://api.lorem.space/image/movie",
     },
   });
@@ -33,7 +32,6 @@ async function main() {
     data: {
       name: "Gustavo",
       email: "guusilveira@gmail.com",
-      password: await getHashedPassword("aoba123"),
       image: "https://github.com/iamgriffon.png",
     },
   });

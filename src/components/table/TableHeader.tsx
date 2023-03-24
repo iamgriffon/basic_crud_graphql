@@ -3,7 +3,7 @@ interface THeaderProps {
   align: string
 }
 
-export function THeader({data, align}: THeaderProps) {
+export function TableHeader({data, align}: THeaderProps) {
   return (
       <th
         scope="col"

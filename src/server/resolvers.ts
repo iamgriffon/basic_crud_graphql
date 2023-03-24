@@ -9,11 +9,11 @@ type Task = {
 export const resolvers = {
   Query: {
     user: async (_parent, args, context) => {
-      const { email } = args;
+      const { id } = args;
 
       const user = await prisma.user.findFirst({
         where: {
-          email: email,
+          id: id,
         },
         include: {
           tasks: true,
@@ -21,7 +21,7 @@ export const resolvers = {
       });
 
       if (!user) {
-        throw new Error(`No user found with email: ${email}`);
+        throw new Error(`No user found with id: ${id}`);
       }
 
       return user;
@@ -62,6 +62,7 @@ export const resolvers = {
           data: {
             name: name,
             image: image,
+            email: email
           },
         })
         .then((res) => console.log("Response from server: ", res));
@@ -70,7 +71,8 @@ export const resolvers = {
           tasks: true,
         },
       });
-      return updatedUsers;
+      console.log('Updated Users', updatedUsers)
+      return updatedUsers
     },
 
     updateUser: async (_parent, args, context) => {
